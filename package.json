@@ -1,0 +1,19 @@
+{
+  "name": "kurs-mocki",
+  "version": "1.0.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "playwright test"
+  },
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@types/node": "26.3.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": "24.14.0",
+    "npm": "11.9.0"
+  }
+}
