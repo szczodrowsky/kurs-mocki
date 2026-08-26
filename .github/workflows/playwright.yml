@@ -8,35 +8,35 @@ permissions:
   contents: read
 
 jobs:
-	quality:
-		runs-on: ubuntu-latest
-		timeout-minutes: 10
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-		steps:
-			- name: Check out repository
-				uses: actions/checkout@v5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
 
-			- name: Set up Node.js
-				uses: actions/setup-node@v5
-				with:
-					node-version-file: .nvmrc
-					cache: npm
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
 
-			- name: Install dependencies
-				run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-			- name: Type-check
-				run: npm run typecheck
+      - name: Type-check
+        run: npm run typecheck
 
-			- name: Check formatting
-				run: npm run format:check
+      - name: Check formatting
+        run: npm run format:check
 
-			- name: Run Biome checks
-				run: npm run check:ci
+      - name: Run Biome checks
+        run: npm run check:ci
 
-	test:
-		needs: quality
-		runs-on: ubuntu-latest
+  test:
+    needs: quality
+    runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
@@ -55,7 +55,7 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-		- name: Run tests
+      - name: Run tests
         run: npm test
 
       - name: Upload Playwright report

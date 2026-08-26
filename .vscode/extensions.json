@@ -3,6 +3,7 @@
     "ms-playwright.playwright",
     "openai.chatgpt",
     "biomejs.biome",
+    "redhat.vscode-yaml",
     "pkief.material-icon-theme",
     "zhuangtongfa.material-theme"
   ]
