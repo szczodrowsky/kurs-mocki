@@ -6,7 +6,9 @@
 		"typecheck": "tsc --noEmit",
 		"test": "playwright test",
 		"format": "biome format --write",
-		"check": "biome check --write --unsafe"
+		"format:check": "biome format .",
+		"check": "biome check --write --unsafe",
+		"check:ci": "biome check ."
 	},
 	"license": "ISC",
 	"type": "module",

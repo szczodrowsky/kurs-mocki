@@ -1,0 +1,67 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+	quality:
+		runs-on: ubuntu-latest
+		timeout-minutes: 10
+
+		steps:
+			- name: Check out repository
+				uses: actions/checkout@v5
+
+			- name: Set up Node.js
+				uses: actions/setup-node@v5
+				with:
+					node-version-file: .nvmrc
+					cache: npm
+
+			- name: Install dependencies
+				run: npm ci
+
+			- name: Type-check
+				run: npm run typecheck
+
+			- name: Check formatting
+				run: npm run format:check
+
+			- name: Run Biome checks
+				run: npm run check:ci
+
+	test:
+		needs: quality
+		runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+		- name: Run tests
+        run: npm test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
