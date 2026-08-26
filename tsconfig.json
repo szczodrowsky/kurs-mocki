@@ -18,7 +18,7 @@
       "@helpers/*": ["./src/helpers/*"],
       "@pages/*": ["./src/pages/*"],
       "@tests/*": ["./src/tests/*"],
-      "@typings/*": ["./src/typings/*"]
+      "@types/*": ["./src/types/*"]
     }
   },
   "exclude": ["node_modules"]
