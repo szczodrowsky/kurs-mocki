@@ -44,5 +44,6 @@ export class LoginPage extends BasePage {
 		await this.inputs.username.fill(username);
 		await this.inputs.password.fill(password);
 		await this.buttons.signIn.click();
+		await this.page.waitForURL((url) => url.pathname === '/');
 	}
 }
