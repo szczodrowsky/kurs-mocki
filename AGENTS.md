@@ -30,6 +30,15 @@ Strict TypeScript settings are enabled. Avoid `any` and type assertions unless n
 
 Follow Biome: tabs (two-column width), single quotes, semicolons, no trailing commas, and parenthesized arrow parameters. Use kebab-case filenames, camelCase functions and variables, PascalCase types and enum names, and `UPPER_SNAKE_CASE` enum keys. Enum values should match backend strings.
 
+## Language and Interactive API Mocking
+
+Write repository content in English unless a specific task explicitly requests another language.
+
+Use the local `.env` file for test credentials. For `https://aitesters.byst.re`, use `ADMIN_LOGIN_USERNAME` and `ADMIN_LOGIN_PASSWORD`. Never print credential values or authentication tokens, copy them into tracked files, or commit `.env`.
+
+Run tests and all browser automation commands outside the sandbox (`sandbox_permissions: "require_escalated"`). Sandboxed process creation fails with Windows access denied in this environment; do not treat that failure as an application issue.
+
+For interactive API mock creation, inspection, and demonstrations with Playwright CLI, use a visible browser (`--headed`) in a named project session and keep the session between commands. If the current session is headless, start a headed session and set up the required mocks again before triggering requests. Leave the browser open after the demonstration unless the user asks to close it. This rule applies to interactive CLI work; automated tests and CI may run headless.
 
 ## Hooks, Commits, and Configuration
 
