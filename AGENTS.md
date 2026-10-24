@@ -14,9 +14,15 @@ This is a TypeScript Playwright automation project with Faker.js mock data. Orga
 
 Use Node `24.14.0` from `.nvmrc` and npm `11.9.0` from `package.json`. There is no build or local server script. `npm run check` uses `--write --unsafe` and can modify files; use `check:ci` for read-only checks.
 
+Always finish work by running the Biome scripts from `package.json`: `npm run check:ci` and `npm run format:check`. Resolve any reported issues before completing the task.
+
 ## TypeScript and Naming
 
 Strict TypeScript settings are enabled. Avoid `any` and type assertions unless necessary; use `import type` for type-only imports. Use the configured aliases for imports across `src/`:
+
+Always define custom types and interfaces in separate files under `src/types/`, outside implementation files. Import them with `import type` using the `@models/*` alias.
+
+Do not add comments when generating or editing code files. Use clear names and simple structure to convey intent.
 
 | Alias | Directory |
 | --- | --- |
@@ -29,6 +35,12 @@ Strict TypeScript settings are enabled. Avoid `any` and type assertions unless n
 | `@models/*` | `src/types/*` |
 
 Follow Biome: tabs (two-column width), single quotes, semicolons, no trailing commas, and parenthesized arrow parameters. Use kebab-case filenames, camelCase functions and variables, PascalCase types and enum names, and `UPPER_SNAKE_CASE` enum keys. Enum values should match backend strings.
+
+Page Object filenames are an exception: use camelCase, such as `loginPage.ts`. Keep class names in PascalCase (`LoginPage`) and instance names in camelCase (`loginPage`). Group locators by element kind into readonly objects such as `inputs`, `buttons`, `links`, `headings`, and `selects`, as applicable. Define group types separately in `src/types/`. Keep Page Objects simple: expose locators for individual actions and add methods only for useful workflows or navigation. Avoid wrappers around a single `fill()` or `click()` and unnecessary abstraction layers.
+
+Use the same locator grouping convention on every page, including `checkboxes` where applicable. For repeated elements such as product cards, scope single-element actions to the intended item instead of silently selecting the first match.
+
+For Page Objects, use `getByTestId` with existing `data-testid` attributes by default. Verify locators against the current page with Playwright CLI. Use `getByRole` or `getByLabel` only when a suitable test ID is unavailable.
 
 ## Language and Interactive API Mocking
 
