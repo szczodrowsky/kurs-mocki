@@ -27,6 +27,11 @@ export interface ProductsPageHeadings {
 	readonly list: Locator;
 }
 
+export interface ProductsPageTexts {
+	readonly noProducts: Locator;
+	readonly summary: Locator;
+}
+
 export interface ProductCardTexts {
 	readonly price: Locator;
 	readonly description: Locator;

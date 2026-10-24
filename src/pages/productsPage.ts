@@ -1,3 +1,4 @@
+import type { Product } from '@models/product.js';
 import type {
 	ProductCardLocators,
 	ProductsPageButtons,
@@ -5,7 +6,8 @@ import type {
 	ProductsPageHeadings,
 	ProductsPageInputs,
 	ProductsPageLinks,
-	ProductsPageSelects
+	ProductsPageSelects,
+	ProductsPageTexts
 } from '@models/products-page.js';
 import { BasePage } from '@pages/basePage.js';
 import type { Locator, Page } from '@playwright/test';
@@ -17,6 +19,7 @@ export class ProductsPage extends BasePage {
 	readonly headings: ProductsPageHeadings;
 	readonly selects: ProductsPageSelects;
 	readonly checkboxes: ProductsPageCheckboxes;
+	readonly texts: ProductsPageTexts;
 	readonly productCards: Locator;
 
 	constructor(page: Page) {
@@ -69,6 +72,22 @@ export class ProductsPage extends BasePage {
 		};
 
 		this.productCards = page.getByTestId('product-item');
+
+		this.texts = {
+			noProducts: page.getByTestId('no-products-message'),
+			summary: page.getByTestId('products-count-summary')
+		};
+	}
+
+	async mockProducts(products: Product[]): Promise<void> {
+		await this.page.route('**/api/v1/products', async (route) => {
+			if (route.request().method() !== 'GET') {
+				await route.fallback();
+				return;
+			}
+
+			await route.fulfill({ status: 200, json: products });
+		});
 	}
 
 	scopeProductCard(name: string): ProductCardLocators {
