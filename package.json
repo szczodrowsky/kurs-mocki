@@ -5,6 +5,7 @@
 		"prepare": "husky",
 		"typecheck": "tsc --noEmit",
 		"test": "playwright test",
+		"test:mocking": "playwright test src/tests/products-mocking.spec.ts --ui",
 		"format": "biome format --write",
 		"format:check": "biome format .",
 		"check": "biome check --write --unsafe",
