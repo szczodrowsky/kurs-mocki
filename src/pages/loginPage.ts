@@ -1,3 +1,4 @@
+import type { LoginCredentials } from '@models/login-credentials.js';
 import type { LoginPageButtons, LoginPageInputs, LoginPageLinks } from '@models/login-page.js';
 import { BasePage } from '@pages/basePage.js';
 import type { Locator, Page } from '@playwright/test';
@@ -9,7 +10,10 @@ export class LoginPage extends BasePage {
 
 	readonly heading: Locator;
 
-	constructor(page: Page) {
+	constructor(
+		page: Page,
+		private readonly credentials: LoginCredentials
+	) {
 		const heading = page.getByTestId('login-title');
 		super(page, () => '/login', heading);
 
@@ -36,7 +40,7 @@ export class LoginPage extends BasePage {
 		this.heading = heading;
 	}
 
-	async login(username: string, password: string): Promise<void> {
+	async login({ username, password }: LoginCredentials = this.credentials): Promise<void> {
 		await this.inputs.username.fill(username);
 		await this.inputs.password.fill(password);
 		await this.buttons.signIn.click();
