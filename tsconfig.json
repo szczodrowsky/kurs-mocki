@@ -23,5 +23,6 @@
 			"@models/*": ["./src/types/*"]
 		}
 	},
+	"include": ["src", "playwright.config.ts"],
 	"exclude": ["node_modules"]
 }
