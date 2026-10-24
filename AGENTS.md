@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a TypeScript Playwright automation project with Faker.js mock data. Organize UI automation with the Page Object Model: put page classes in `src/pages/`, fixtures in `src/fixtures/`, specs in `src/tests/`, reusable generators in `src/helpers/`, enums in `src/enums/`, and types in `src/types/`. Playwright is configured in `playwright.config.ts`. The `src/tests/` directory currently has no tracked specs.
+This is a TypeScript Playwright automation project with Faker.js mock data. Organize UI automation with the Page Object Model: put page classes in `src/pages/`, fixtures in `src/fixtures/`, specs in `src/tests/`, reusable generators in `src/helpers/`, enums in `src/enums/`, and types in `src/types/`. Playwright is configured in `playwright.config.ts`.
 
 ## Development Commands
 
@@ -42,6 +42,16 @@ Use the same locator grouping convention on every page, including `checkboxes` w
 
 For Page Objects, use `getByTestId` with existing `data-testid` attributes by default. Verify locators against the current page with Playwright CLI. Use `getByRole` or `getByLabel` only when a suitable test ID is unavailable.
 
+Define locators in the Page Object constructor and store them in readonly fields or groups. Methods must use those existing locators rather than define new ones. Do not embed selectors or call `getByTestId`, `getByRole`, `getByLabel`, or `locator` directly inside action or navigation methods. Dynamic item scoping should reuse declared locators instead of introducing new selector definitions inside methods.
+
+## Test Fixtures
+
+Import `test` and `expect` from `@fixtures/page-fixtures.js` in UI specs. This shared fixture file creates `loginPage`, `dashboardPage`, and `productsPage`; tests should receive these POMs as fixture arguments instead of constructing them manually.
+
+The `credentials` option defaults to `adminCredentials` from the login credentials helper and can be overridden with `test.use({ credentials: otherCredentials })`. The `loginPage` fixture injects these credentials into `LoginPage`, allowing `loginPage.login()` without arguments.
+
+The `login` fixture uses `{ auto: true }`, calls `loginPage.goto()` and `loginPage.login()`, then yields `true`. Tests do not need to request it explicitly or repeat login steps. Other POM fixtures only create objects and do not navigate. Keep scenario data and mocks in the test, and install mocks before dashboard navigation triggers the corresponding requests.
+
 ## Language and Interactive API Mocking
 
 Write repository content in English unless a specific task explicitly requests another language.
@@ -56,4 +66,4 @@ For interactive API mock creation, inspection, and demonstrations with Playwrigh
 
 Husky runs `lint-staged` and typecheck before commits. Staged TypeScript gets Biome checks; staged JSON and Markdown are formatted. Recent commit subjects are short but inconsistent; prefer concise prefixes such as `feat:`, `fix:`, or `ci:`. PRs should describe changes and list validation results.
 
-Use `.env.example` and `config/.env.local.dist` as templates. Keep credentials out of tracked files and check Git status before committing environment changes. `config/.env.local` is currently tracked despite the ignore pattern; do not add secrets to it.
+Use `.env.example` as the template for the local `.env` file. UI tests use `BASE_URL`, `ADMIN_LOGIN_USERNAME`, and `ADMIN_LOGIN_PASSWORD`. Keep credentials out of tracked files and check Git status before committing environment changes.
