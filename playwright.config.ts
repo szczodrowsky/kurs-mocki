@@ -1,4 +1,7 @@
+import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
+
+const baseURL = process.env.BASE_URL;
 
 export default defineConfig({
 	testDir: './src/tests',
@@ -8,6 +11,7 @@ export default defineConfig({
 	workers: 1,
 	reporter: 'html',
 	use: {
+		baseURL,
 		trace: 'on-first-retry'
 	},
 	projects: [
