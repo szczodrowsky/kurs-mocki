@@ -6,6 +6,12 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+.playwright/
+.playwright-cli/
+**/.auth/
+**/storage-state*.json
+**/auth-state*.json
+playwright-recordings/
 
 
 
