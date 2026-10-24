@@ -62,6 +62,18 @@ Run tests and all browser automation commands outside the sandbox (`sandbox_perm
 
 For interactive API mock creation, inspection, and demonstrations with Playwright CLI, use a visible browser (`--headed`) in a named project session and keep the session between commands. If the current session is headless, start a headed session and set up the required mocks again before triggering requests. Leave the browser open after the demonstration unless the user asks to close it. This rule applies to interactive CLI work; automated tests and CI may run headless.
 
+## Environment Variables
+
+`playwright.config.ts` loads `.env` through `dotenv/config`. Read required variables with `getRequiredEnv` from `src/helpers/get-required-env.ts`. The helper returns a `string` and throws an error naming the variable when it is missing or empty. Do not replace missing values with empty strings or use non-null assertions to suppress environment typing errors. Never include secret values in error messages.
+
+| Variable | Purpose |
+| --- | --- |
+| `BASE_URL` | Application origin used by Playwright `use.baseURL` for relative navigation. |
+| `ADMIN_LOGIN_USERNAME` | Default admin username used by the configurable `credentials` fixture option. |
+| `ADMIN_LOGIN_PASSWORD` | Default admin password used by the configurable `credentials` fixture option. |
+
+`adminCredentials` reads the login variables through `getRequiredEnv`. Keep actual values in the local ignored `.env` file or the process environment; `.env.example` contains only the public URL and empty credential placeholders. In CI, the workflow supplies `BASE_URL` from a repository variable with a default application URL and the login variables from repository secrets.
+
 ## Hooks, Commits, and Configuration
 
 Husky runs `lint-staged` and typecheck before commits. Staged TypeScript gets Biome checks; staged JSON and Markdown are formatted. Recent commit subjects are short but inconsistent; prefer concise prefixes such as `feat:`, `fix:`, or `ci:`. PRs should describe changes and list validation results.
