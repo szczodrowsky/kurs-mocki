@@ -21,7 +21,7 @@
     ]
   },
   "files.autoSaveDelay": 500,
-  "playwright.reuseBrowser": true,
+  "playwright.reuseBrowser": false,
   "chat.mcp.gallery.enabled": true,
   "[github-actions-workflow]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
