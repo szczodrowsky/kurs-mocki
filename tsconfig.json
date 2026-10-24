@@ -1,9 +1,10 @@
 {
 	"compilerOptions": {
-		"module": "nodenext",
-		"target": "esnext",
+		"module": "es2022",
+		"target": "es2024",
 		"types": ["node"],
 		"sourceMap": true,
+		"moduleResolution": "bundler",
 		"noUncheckedIndexedAccess": true,
 		"exactOptionalPropertyTypes": true,
 		"strict": true,
@@ -14,11 +15,12 @@
 		"skipLibCheck": true,
 		"paths": {
 			"@components/*": ["./src/components/*"],
+			"@enums/*": ["./src/enums/*"],
 			"@fixtures/*": ["./src/fixtures/*"],
 			"@helpers/*": ["./src/helpers/*"],
 			"@pages/*": ["./src/pages/*"],
 			"@tests/*": ["./src/tests/*"],
-			"@types/*": ["./src/types/*"]
+			"@models/*": ["./src/types/*"]
 		}
 	},
 	"exclude": ["node_modules"]
