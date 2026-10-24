@@ -8,8 +8,7 @@ function formatBackendDate(date: Date): string {
 	return date.toISOString().replace('Z', '');
 }
 
-function generateProduct(id: number): Product {
-	const name = faker.commerce.productName();
+function generateProduct(id: number, name: string): Product {
 	const createdAt = faker.date.recent({ days: 365 });
 	const updatedAt = faker.date.between({ from: createdAt, to: new Date() });
 
@@ -20,7 +19,7 @@ function generateProduct(id: number): Product {
 		price: Number(faker.commerce.price({ min: 1, max: 2000, dec: 2 })),
 		stockQuantity: faker.number.int({ min: 0, max: 500 }),
 		category: faker.helpers.arrayElement(categories),
-		imageUrl: `/images/${faker.helpers.slugify(name).toLowerCase()}.png`,
+		imageUrl: '/images/iphone.png',
 		createdAt: formatBackendDate(createdAt),
 		updatedAt: formatBackendDate(updatedAt)
 	};
@@ -28,11 +27,7 @@ function generateProduct(id: number): Product {
 
 export function generateProducts(count = 8): Product[] {
 	const productCount = Math.max(0, Math.floor(count));
-	const products: Product[] = [];
+	const names = faker.helpers.uniqueArray(() => faker.commerce.productName(), productCount);
 
-	for (let id = 1; id <= productCount; id++) {
-		products.push(generateProduct(id));
-	}
-
-	return products;
+	return names.map((name, index) => generateProduct(index + 1, name));
 }
