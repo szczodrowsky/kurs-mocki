@@ -12,7 +12,8 @@ export default defineConfig({
 	reporter: 'html',
 	use: {
 		baseURL,
-		trace: 'on-first-retry'
+		trace: 'on',
+		screenshot: { mode: 'on', fullPage: true }
 	},
 	projects: [
 		{
