@@ -54,6 +54,8 @@ Follow the [api-login skill](.agents/skills/api-login/SKILL.md) for authenticati
 
 Write repository content in English unless a specific task explicitly requests another language.
 
+Use the [har-to-mock skill](.agents/skills/har-to-mock/SKILL.md) for manual HAR-to-JSON refreshes of `src/mocks/product.json`, keeping new recordings and temporary files local. JSON-based tests use that fixture independently of HAR; refreshing it does not change existing HAR methods, tests, or recording configuration.
+
 Use the local `.env` file for test credentials. For `https://aitesters.byst.re`, use `ADMIN_LOGIN_USERNAME` and `ADMIN_LOGIN_PASSWORD`. Never print credential values or authentication tokens, copy them into tracked files, or commit `.env`.
 
 Run tests and all browser automation commands outside the sandbox (`sandbox_permissions: "require_escalated"`). Sandboxed process creation fails with Windows access denied in this environment; do not treat that failure as an application issue.

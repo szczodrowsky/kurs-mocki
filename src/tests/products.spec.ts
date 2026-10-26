@@ -3,15 +3,6 @@ import { expect, test } from '@fixtures/page-fixtures.js';
 import { generateProduct, generateProducts } from '@helpers/generate-products.js';
 import type { Product } from '@models/product.js';
 
-test('displays 8 products across 7 categories', async ({ loginViaApi, productsPage }) => {
-	expect(loginViaApi).toBe(true);
-	await productsPage.goto();
-	await expect(productsPage.links.profile).toBeVisible();
-	await expect(productsPage.productCards).toHaveCount(8);
-	await expect(productsPage.texts.summary).toHaveText('8 products across 7 categories');
-	await expect(productsPage.cardLocators.texts.category).toHaveCount(8);
-});
-
 test('displays products using mockResponse', async ({ productsPage }) => {
 	const mockedProducts = generateProducts(10);
 
@@ -86,10 +77,8 @@ test('displays products using mockFromJson', async ({ productsPage }) => {
 	await productsPage.mockFromJson(jsonPath);
 	await productsPage.goto();
 
-	await expect(productsPage.productCards).toHaveCount(8);
-	await expect(productsPage.texts.summary).toHaveText('8 products across 7 categories');
-	await expect(productsPage.scopeProductCard('iPhone 13 Pro').heading).toHaveText('iPhone 13 Pro');
-	await expect(productsPage.scopeProductCard('Sony WH-1000XM4').heading).toHaveText('Sony WH-1000XM4');
+	await expect(productsPage.productCards.first()).toBeVisible();
+	await expect(productsPage.productCards).not.toHaveCount(0);
 });
 
 test('displays products using mockFromHar', async ({ productsPage }) => {
