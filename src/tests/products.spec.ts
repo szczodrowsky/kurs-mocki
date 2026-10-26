@@ -1,18 +1,21 @@
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '@fixtures/page-fixtures.js';
 import { generateProduct, generateProducts } from '@helpers/generate-products.js';
 import type { Product } from '@models/product.js';
 
-test('displays 8 products across 7 categories', async ({ productsPage }) => {
+test('displays 8 products across 7 categories', async ({ loginViaApi, productsPage }) => {
+	expect(loginViaApi).toBe(true);
 	await productsPage.goto();
+	await expect(productsPage.links.profile).toBeVisible();
 	await expect(productsPage.productCards).toHaveCount(8);
 	await expect(productsPage.texts.summary).toHaveText('8 products across 7 categories');
 	await expect(productsPage.cardLocators.texts.category).toHaveCount(8);
 });
 
-test('displays mocked products in the catalog', async ({ productsPage }) => {
+test('displays products using mockResponse', async ({ productsPage }) => {
 	const mockedProducts = generateProducts(10);
 
-	await productsPage.mockProducts(mockedProducts);
+	await productsPage.mockResponse(mockedProducts);
 	await productsPage.goto();
 
 	await expect(productsPage.headings.page).toBeVisible();
@@ -32,7 +35,7 @@ test('displays mocked products in the catalog', async ({ productsPage }) => {
 test('shows the empty catalog state when the products API returns no items', async ({ productsPage }) => {
 	const mockedProducts: Product[] = [];
 
-	await productsPage.mockProducts(mockedProducts);
+	await productsPage.mockResponse(mockedProducts);
 	await productsPage.goto();
 
 	await expect(productsPage.texts.noProducts).toHaveText('No products found');
@@ -46,7 +49,7 @@ test('renders products with long names and descriptions', async ({ productsPage 
 		description: 'Detailed product description '.repeat(100).trim()
 	});
 
-	await productsPage.mockProducts([product]);
+	await productsPage.mockResponse([product]);
 	await productsPage.goto();
 
 	await expect(productsPage.productCards).toHaveCount(1);
@@ -63,7 +66,7 @@ test('disables Add to Cart only for the out-of-stock product', async ({ products
 	const soldOut = generateProduct(1, { name: 'Sold Out Speaker', stockQuantity: 0 });
 	const available = generateProduct(2, { name: 'Available Speaker', stockQuantity: 25 });
 
-	await productsPage.mockProducts([soldOut, available]);
+	await productsPage.mockResponse([soldOut, available]);
 	await productsPage.goto();
 
 	await expect(productsPage.productCards).toHaveCount(2);
@@ -75,4 +78,26 @@ test('disables Add to Cart only for the out-of-stock product', async ({ products
 	await expect(availableCard.root).toBeVisible();
 	await expect(soldOutCard.buttons.addToCart).toBeDisabled();
 	await expect(availableCard.buttons.addToCart).toBeEnabled();
+});
+
+test('displays products using mockFromJson', async ({ productsPage }) => {
+	const jsonPath = fileURLToPath(new URL('../mocks/product.json', import.meta.url));
+
+	await productsPage.mockFromJson(jsonPath);
+	await productsPage.goto();
+
+	await expect(productsPage.productCards).toHaveCount(8);
+	await expect(productsPage.texts.summary).toHaveText('8 products across 7 categories');
+	await expect(productsPage.scopeProductCard('iPhone 13 Pro').heading).toHaveText('iPhone 13 Pro');
+	await expect(productsPage.scopeProductCard('Sony WH-1000XM4').heading).toHaveText('Sony WH-1000XM4');
+});
+
+test('displays products using mockFromHar', async ({ productsPage }) => {
+	await productsPage.mockFromHar();
+	await productsPage.goto();
+
+	await expect(productsPage.productCards).toHaveCount(8);
+	await expect(productsPage.texts.summary).toHaveText('8 products across 7 categories');
+	await expect(productsPage.scopeProductCard('iPhone 13 Pro').heading).toHaveText('iPhone 13 Pro');
+	await expect(productsPage.scopeProductCard('Sony WH-1000XM4').heading).toHaveText('Sony WH-1000XM4');
 });

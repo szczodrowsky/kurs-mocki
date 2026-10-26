@@ -96,7 +96,7 @@ export class ProductsPage extends BasePage {
 		};
 	}
 
-	async mockProducts(products: Product[]): Promise<void> {
+	async mockResponse(products: Product[]): Promise<void> {
 		await this.page.route('**/api/v1/products', async (route) => {
 			if (route.request().method() !== 'GET') {
 				await route.fallback();
@@ -104,6 +104,23 @@ export class ProductsPage extends BasePage {
 			}
 
 			await route.fulfill({ status: 200, json: products });
+		});
+	}
+
+	async mockFromJson(jsonPath: string): Promise<void> {
+		await this.page.route('**/api/v1/products', async (route) => {
+			if (route.request().method() !== 'GET') {
+				await route.fallback();
+				return;
+			}
+
+			await route.fulfill({ status: 200, contentType: 'application/json', path: jsonPath });
+		});
+	}
+
+	async mockFromHar(): Promise<void> {
+		await this.page.routeFromHAR('src/hars/network.har', {
+			url: '**/api/v1/products'
 		});
 	}
 

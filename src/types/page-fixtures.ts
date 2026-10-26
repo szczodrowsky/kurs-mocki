@@ -5,7 +5,8 @@ import type { ProductsPage } from '@pages/productsPage.js';
 
 export interface PageFixtures {
 	readonly credentials: LoginCredentials;
-	readonly login: boolean;
+	readonly skipAutoLogin: boolean;
+	readonly loginViaApi: boolean;
 	readonly loginPage: LoginPage;
 	readonly dashboardPage: DashboardPage;
 	readonly productsPage: ProductsPage;

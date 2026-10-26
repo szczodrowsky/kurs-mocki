@@ -35,6 +35,18 @@
 			"arrowParentheses": "always"
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["src/fixtures/page-fixtures.ts"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noEmptyPattern": "off"
+					}
+				}
+			}
+		}
+	],
 	"assist": {
 		"enabled": true,
 		"actions": {

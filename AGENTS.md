@@ -46,11 +46,9 @@ Define locators in the Page Object constructor and store them in readonly fields
 
 ## Test Fixtures
 
-Import `test` and `expect` from `@fixtures/page-fixtures.js` in UI specs. This shared fixture file creates `loginPage`, `dashboardPage`, and `productsPage`; tests should receive these POMs as fixture arguments instead of constructing them manually.
-
-The `credentials` option defaults to `adminCredentials` from the login credentials helper and can be overridden with `test.use({ credentials: otherCredentials })`. The `loginPage` fixture injects these credentials into `LoginPage`, allowing `loginPage.login()` without arguments.
-
-The `login` fixture uses `{ auto: true }`, calls `loginPage.goto()` and `loginPage.login()`, then yields `true`. Tests do not need to request it explicitly or repeat login steps. Other POM fixtures only create objects and do not navigate. Keep scenario data and mocks in the test, and install mocks before dashboard navigation triggers the corresponding requests.
+The automatic `loginViaApi` fixture authenticates through the API with the configurable `credentials` option; set `skipAutoLogin: true` for login-form tests.
+UI specs import `test` and `expect` from `@fixtures/page-fixtures.js` and use the provided Page Objects.
+Follow the [api-login skill](.agents/skills/api-login/SKILL.md) for authentication details, new roles, and Playwright CLI/MCP sessions.
 
 ## Language and Interactive API Mocking
 
@@ -72,7 +70,7 @@ For interactive API mock creation, inspection, and demonstrations with Playwrigh
 | `ADMIN_LOGIN_USERNAME` | Default admin username used by the configurable `credentials` fixture option. |
 | `ADMIN_LOGIN_PASSWORD` | Default admin password used by the configurable `credentials` fixture option. |
 
-`adminCredentials` reads the login variables through `getRequiredEnv`. Keep actual values in the local ignored `.env` file or the process environment; `.env.example` contains only the public URL and empty credential placeholders. In CI, the workflow supplies `BASE_URL` from a repository variable with a default application URL and the login variables from repository secrets.
+`getAdminCredentials` reads the login variables through `getRequiredEnv` when the default credentials fixture is used. Keep actual values in the local ignored `.env` file or the process environment; `.env.example` contains only the public URL and empty credential placeholders. In CI, the workflow supplies `BASE_URL` from a repository variable with a default application URL and the login variables from repository secrets.
 
 ## Hooks, Commits, and Configuration
 
