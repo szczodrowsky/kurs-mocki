@@ -2,6 +2,13 @@ import { expect, test } from '@fixtures/page-fixtures.js';
 import { generateProduct, generateProducts } from '@helpers/generate-products.js';
 import type { Product } from '@models/product.js';
 
+test('displays 8 products across 7 categories', async ({ productsPage }) => {
+	await productsPage.goto();
+	await expect(productsPage.productCards).toHaveCount(8);
+	await expect(productsPage.texts.summary).toHaveText('8 products across 7 categories');
+	await expect(productsPage.cardLocators.texts.category).toHaveCount(8);
+});
+
 test('displays mocked products in the catalog', async ({ productsPage }) => {
 	const mockedProducts = generateProducts(10);
 
@@ -33,7 +40,7 @@ test('shows the empty catalog state when the products API returns no items', asy
 	await expect(productsPage.productCards).toHaveCount(0);
 });
 
-test('displays the full long product name and description', async ({ productsPage }) => {
+test('renders products with long names and descriptions', async ({ productsPage }) => {
 	const product = generateProduct(1, {
 		name: 'Long product name '.repeat(30).trim(),
 		description: 'Detailed product description '.repeat(100).trim()

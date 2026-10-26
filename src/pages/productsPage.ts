@@ -21,6 +21,7 @@ export class ProductsPage extends BasePage {
 	readonly checkboxes: ProductsPageCheckboxes;
 	readonly texts: ProductsPageTexts;
 	readonly productCards: Locator;
+	readonly cardLocators: ProductCardLocators;
 
 	constructor(page: Page) {
 		const heading = page.getByTestId('products-title');
@@ -72,6 +73,22 @@ export class ProductsPage extends BasePage {
 		};
 
 		this.productCards = page.getByTestId('product-item');
+		this.cardLocators = {
+			root: this.productCards,
+			heading: page.getByTestId('product-name'),
+			image: page.getByTestId('product-image'),
+			buttons: {
+				decreaseQuantity: page.getByTestId('product-decrease-quantity'),
+				increaseQuantity: page.getByTestId('product-increase-quantity'),
+				addToCart: page.getByTestId('product-add-button')
+			},
+			texts: {
+				price: page.getByTestId('product-price'),
+				description: page.getByTestId('product-description'),
+				category: page.getByTestId('product-category'),
+				quantity: page.getByTestId('product-quantity-value')
+			}
+		};
 
 		this.texts = {
 			noProducts: page.getByTestId('no-products-message'),
@@ -91,24 +108,25 @@ export class ProductsPage extends BasePage {
 	}
 
 	scopeProductCard(name: string): ProductCardLocators {
+		const exactName = new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
 		const root = this.productCards.filter({
-			has: this.page.getByTestId('product-name').and(this.page.getByText(name, { exact: true }))
+			has: this.cardLocators.heading.filter({ hasText: exactName })
 		});
 
 		return {
 			root,
-			heading: root.getByTestId('product-name'),
-			image: root.getByTestId('product-image'),
+			heading: root.locator(this.cardLocators.heading),
+			image: root.locator(this.cardLocators.image),
 			buttons: {
-				decreaseQuantity: root.getByTestId('product-decrease-quantity'),
-				increaseQuantity: root.getByTestId('product-increase-quantity'),
-				addToCart: root.getByTestId('product-add-button')
+				decreaseQuantity: root.locator(this.cardLocators.buttons.decreaseQuantity),
+				increaseQuantity: root.locator(this.cardLocators.buttons.increaseQuantity),
+				addToCart: root.locator(this.cardLocators.buttons.addToCart)
 			},
 			texts: {
-				price: root.getByTestId('product-price'),
-				description: root.getByTestId('product-description'),
-				category: root.getByTestId('product-category'),
-				quantity: root.getByTestId('product-quantity-value')
+				price: root.locator(this.cardLocators.texts.price),
+				description: root.locator(this.cardLocators.texts.description),
+				category: root.locator(this.cardLocators.texts.category),
+				quantity: root.locator(this.cardLocators.texts.quantity)
 			}
 		};
 	}

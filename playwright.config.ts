@@ -14,7 +14,14 @@ export default defineConfig({
 	use: {
 		baseURL,
 		trace: 'on',
-		screenshot: { mode: 'on', fullPage: true }
+		screenshot: { mode: 'on', fullPage: true },
+		contextOptions: {
+			recordHar: {
+				path: 'network.har',
+				content: 'embed',
+				mode: 'full'
+			}
+		}
 	},
 	projects: [
 		{

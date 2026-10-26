@@ -7,6 +7,20 @@ import { test as base, expect } from '@playwright/test';
 
 export const test = base.extend<PageFixtures>({
 	credentials: [adminCredentials, { option: true }],
+	contextOptions: async ({ contextOptions }, use, testInfo) => {
+		if (!contextOptions.recordHar) {
+			await use(contextOptions);
+			return;
+		}
+
+		await use({
+			...contextOptions,
+			recordHar: {
+				...contextOptions.recordHar,
+				path: testInfo.outputPath(contextOptions.recordHar.path)
+			}
+		});
+	},
 	loginPage: async ({ page, credentials }, use) => {
 		await use(new LoginPage(page, credentials));
 	},
