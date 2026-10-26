@@ -11,6 +11,12 @@ export interface LoginPageButtons {
 	readonly register: Locator;
 }
 
+export interface LoginPageErrors {
+	readonly username: Locator;
+	readonly password: Locator;
+	readonly signIn: Locator;
+}
+
 export interface LoginPageLinks {
 	readonly brand: Locator;
 	readonly login: Locator;

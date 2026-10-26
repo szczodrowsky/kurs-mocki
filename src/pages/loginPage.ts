@@ -1,11 +1,12 @@
 import type { LoginCredentials } from '@models/login-credentials.js';
-import type { LoginPageButtons, LoginPageInputs, LoginPageLinks } from '@models/login-page.js';
+import type { LoginPageButtons, LoginPageErrors, LoginPageInputs, LoginPageLinks } from '@models/login-page.js';
 import { BasePage } from '@pages/basePage.js';
 import type { Locator, Page } from '@playwright/test';
 
 export class LoginPage extends BasePage {
 	readonly inputs: LoginPageInputs;
 	readonly buttons: LoginPageButtons;
+	readonly errors: LoginPageErrors;
 	readonly links: LoginPageLinks;
 
 	readonly heading: Locator;
@@ -28,6 +29,12 @@ export class LoginPage extends BasePage {
 			register: page.getByTestId('login-register-link')
 		};
 
+		this.errors = {
+			username: page.getByTestId('login-username-error'),
+			password: page.getByTestId('login-password-error'),
+			signIn: page.getByTestId('toast-viewport').getByTestId('toast-description')
+		};
+
 		this.links = {
 			brand: page.getByTestId('brand-link'),
 			login: page.getByTestId('login-link'),
@@ -44,6 +51,5 @@ export class LoginPage extends BasePage {
 		await this.inputs.username.fill(username);
 		await this.inputs.password.fill(password);
 		await this.buttons.signIn.click();
-		await this.page.waitForURL((url) => url.pathname === '/');
 	}
 }
