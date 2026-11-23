@@ -4,7 +4,7 @@
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true,
-		"defaultBranch": "origin/master"
+		"defaultBranch": "origin/main"
 	},
 	"files": {
 		"includes": ["**", "!**/.vscode", "!**/node_modules"],

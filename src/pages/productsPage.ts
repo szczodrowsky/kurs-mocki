@@ -1,5 +1,9 @@
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { apiEndpoints } from '@helpers/api-endpoints.js';
+import { getRequiredEnv } from '@helpers/get-required-env.js';
 import { mockGetError } from '@helpers/mock-api-error.js';
+import { productSearchResponse } from '@helpers/product-search-response.js';
 import type { Product } from '@models/product.js';
 import type {
 	ProductCardLocators,
@@ -100,31 +104,25 @@ export class ProductsPage extends BasePage {
 		};
 	}
 
-	async mockResponse(products: Product[]): Promise<void> {
-		await this.page.route(`**${apiEndpoints.products}`, async (route) => {
-			if (route.request().method() !== 'GET') {
-				await route.fallback();
-				return;
-			}
-
-			await route.fulfill({ status: 200, json: products });
-		});
+	async mockResponse(products: readonly Product[]): Promise<void> {
+		await this.mockProductSearch(products, 0);
 	}
 
 	async mockFromJson(jsonPath: string): Promise<void> {
-		await this.page.route(`**${apiEndpoints.products}`, async (route) => {
-			if (route.request().method() !== 'GET') {
-				await route.fallback();
-				return;
-			}
-
-			await route.fulfill({ status: 200, contentType: 'application/json', path: jsonPath });
-		});
+		const products: Product[] = JSON.parse(await readFile(jsonPath, 'utf8'));
+		await this.mockResponse(products);
 	}
 
-	async mockFromHar(): Promise<void> {
-		await this.page.routeFromHAR('src/hars/network.har', {
-			url: `**${apiEndpoints.products}`
+	async mockFromHar(replayPath: string, baseURL = getRequiredEnv('BASE_URL')): Promise<void> {
+		const har = JSON.parse(await readFile('src/hars/network.har', 'utf8'));
+		for (const entry of har.log.entries) {
+			const { pathname, search } = new URL(entry.request.url);
+			entry.request.url = new URL(pathname + search, baseURL).href;
+		}
+		await mkdir(dirname(replayPath), { recursive: true });
+		await writeFile(replayPath, JSON.stringify(har));
+		await this.page.routeFromHAR(replayPath, {
+			url: new RegExp(`^https?://[^/]+${apiEndpoints.productSearch}(?:\\?|$)`)
 		});
 	}
 
@@ -133,6 +131,10 @@ export class ProductsPage extends BasePage {
 	}
 
 	async mockProductsNetworkError(recoveryProducts?: readonly Product[]): Promise<void> {
+		await this.mockProductSearch(recoveryProducts, 2);
+	}
+
+	private async mockProductSearch(products: readonly Product[] | undefined, failures: number): Promise<void> {
 		let attempts = 0;
 		await this.page.route(
 			(url) => url.pathname === apiEndpoints.productSearch,
@@ -142,35 +144,13 @@ export class ProductsPage extends BasePage {
 					return;
 				}
 
-				if (!recoveryProducts || ++attempts <= 2) {
+				if (!products || ++attempts <= failures) {
 					await route.abort();
 					return;
 				}
 
 				const { searchParams } = new URL(route.request().url());
-				const pageNumber = Number(searchParams.get('page') ?? 0);
-				const pageSize = Number(searchParams.get('size') ?? 12);
-				const start = pageNumber * pageSize;
-				const prices = recoveryProducts.map(({ price }) => price);
-				const categories = Object.entries(Object.groupBy(recoveryProducts, ({ category }) => category)).map(
-					([value, entries]) => ({ value, count: entries.length })
-				);
-
-				await route.fulfill({
-					status: 200,
-					json: {
-						content: recoveryProducts.slice(start, start + pageSize),
-						pageNumber,
-						pageSize,
-						totalElements: recoveryProducts.length,
-						totalPages: Math.ceil(recoveryProducts.length / pageSize),
-						facets: {
-							categories,
-							priceRange: prices.length ? { min: Math.min(...prices), max: Math.max(...prices) } : { min: 0, max: 0 },
-							inStockCount: recoveryProducts.filter(({ stockQuantity }) => stockQuantity > 0).length
-						}
-					}
-				});
+				await route.fulfill({ json: productSearchResponse(products, searchParams) });
 			}
 		);
 	}

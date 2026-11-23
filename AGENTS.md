@@ -8,13 +8,24 @@ This is a TypeScript Playwright automation project with Faker.js mock data. Orga
 
 - `npm ci` installs the exact versions from the lockfile.
 - `npm run typecheck` runs strict TypeScript checking without emitting files.
-- `npm test` runs Playwright tests under `src/tests/`.
+- `npm test` runs all Playwright tests under `src/tests/` with two workers.
+- `npm run test:login`, `npm run test:products`, and `npm run test:cart` select a Playwright project. `npm run test:ui` opens the test runner UI.
 - `npm run check:ci` runs Biome checks without writing changes.
 - `npm run format:check` checks formatting; `npm run format` applies formatting.
 
 Use Node `24.14.0` from `.nvmrc` and npm `11.9.0` from `package.json`. There is no build or local server script. `npm run check` uses `--write --unsafe` and can modify files; use `check:ci` for read-only checks.
 
 Always finish work by running the Biome scripts from `package.json`: `npm run check:ci` and `npm run format:check`. Resolve any reported issues before completing the task.
+
+## Playwright Sharding
+
+GitHub Actions runs four shards on separate runners after the quality checks pass. The `login`, `products`, and `cart` projects are included in the sharded suite. Each runner uses two Playwright workers and signs in through the API for its own storage state.
+
+Each shard uploads a blob report. The `merge-reports` job combines the available blobs into one HTML report, including when a shard reports test failures. Download `playwright-report` from the workflow run's artifacts. The intermediate blobs are kept for one day and the HTML report for seven days.
+
+Run the full suite locally with `npm test`, or reproduce a shard with `npm test -- --shard=1/4`. Local runs generate HTML reports and can include traces. CI uses blob reports and disables traces to keep them out of uploaded artifacts.
+
+To merge downloaded shard ZIPs locally, put them in `blob-report/` and run `npx playwright merge-reports --reporter=html blob-report`.
 
 ## TypeScript and Naming
 
@@ -26,12 +37,10 @@ Do not add comments when generating or editing code files. Use clear names and s
 
 | Alias | Directory |
 | --- | --- |
-| `@components/*` | `src/components/*` |
 | `@enums/*` | `src/enums/*` |
 | `@fixtures/*` | `src/fixtures/*` |
 | `@helpers/*` | `src/helpers/*` |
 | `@pages/*` | `src/pages/*` |
-| `@tests/*` | `src/tests/*` |
 | `@models/*` | `src/types/*` |
 
 Follow Biome: tabs (two-column width), single quotes, semicolons, no trailing commas, and parenthesized arrow parameters. Use kebab-case filenames, camelCase functions and variables, PascalCase types and enum names, and `UPPER_SNAKE_CASE` enum keys. Enum values should match backend strings.
@@ -46,8 +55,10 @@ Define locators in the Page Object constructor and store them in readonly fields
 
 ## Test Fixtures
 
-The automatic `loginViaApi` fixture authenticates through the API with the configurable `credentials` option; set `skipAutoLogin: true` for login-form tests.
+Global setup signs in through the API once per run. The `storageState` fixture loads the resulting file from `.playwright/.auth/`. Global teardown removes the run's file. Set `skipAutoLogin: true` for login-form tests and `freshSession: true` for tests that exercise session refresh or invalidation. Tests with custom `credentials` use their own API session.
 UI specs import `test` and `expect` from `@fixtures/page-fixtures.js` and use the provided Page Objects.
+Use flat `test.describe` groups and assign each test to one category with `@login`, `@products`, or `@cart`. Test recordings go in the individual test's output directory.
+The live product availability test runs in the `products` project and requires the configured backend to have product `8` in stock.
 Follow the [api-login skill](.agents/skills/api-login/SKILL.md) for authentication details, new roles, and Playwright CLI/MCP sessions.
 
 ## Language and Interactive API Mocking

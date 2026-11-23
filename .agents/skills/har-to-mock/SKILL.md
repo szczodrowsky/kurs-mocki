@@ -13,7 +13,7 @@ description: >-
 
 Read `AGENTS.md`, the [api-login skill](../api-login/SKILL.md), `src/fixtures/page-fixtures.ts`, `src/pages/productsPage.ts`, `src/types/product.ts`, `src/enums/product-category.enum.ts`, and `playwright.config.ts` before recording.
 Use the existing automatic API login and Page Objects. Preserve `mockResponse()`, `mockFromJson()`, existing HAR methods and tests, recording configuration, and fixtures.
-The JSON-based test reads `src/mocks/product.json` through `mockFromJson()` without requiring a HAR or starting a recording. Its assertions check visibility and a non-empty list, not fixed names or product counts.
+The JSON-based test reads `src/mocks/product.json` through `mockFromJson()`. It verifies the response rows and rendered product names against the fixture.
 
 The only durable output of a refresh is `src/mocks/product.json`.
 Do not add a permanent recording script, recording test, environment flag, or dependency. Do not remove existing HAR recording or replay functionality.
@@ -23,8 +23,7 @@ Run this workflow manually outside CI, with tests outside the sandbox as require
 
 - Inspect Git status and preserve user edits. Snapshot the current JSON before starting and refuse to replace it if someone changes it during the refresh.
 - Reserve `src/tests/record-har.tmp.spec.ts` with exclusive creation. If it already exists, stop without overwriting or deleting it.
-- The recording path is `src/hars/network.har`. If a file already exists there, move it to a unique, unused sibling backup and restore it in cleanup. Do not overwrite or discard existing HARs, directories, storage state, or browser sessions.
-- Reserve the recording path for this run before launching Playwright. Track which files this run owns and avoid concurrent recordings.
+- Record to `testInfo.outputPath('recorded-products.har')` under the run's reserved results directory. Leave the tracked replay sample at `src/hars/network.har` in place.
 - Reserve a unique results directory inside `src/hars/` and pass it through Playwright's `--output` option, so the temporary run cannot clear another run's results.
 - Wrap creation, execution, extraction, and cleanup in an ephemeral harness with `try/finally`. Do not leave the harness in the repository.
 
@@ -34,12 +33,13 @@ Create only this temporary spec, using the shared fixtures and automatic login:
 
 ```ts
 import { expect, test } from '@fixtures/page-fixtures.js';
+import { apiEndpoints } from '@helpers/api-endpoints.js';
 
 test.use({ contextOptions: {}, trace: 'off', screenshot: 'off' });
 
-test('records the products response for a JSON mock', async ({ page, productsPage }) => {
-	await page.routeFromHAR('src/hars/network.har', {
-		url: '**/api/v1/products',
+test('records the products response for a JSON mock', { tag: '@products' }, async ({ page, productsPage }, testInfo) => {
+	await page.routeFromHAR(testInfo.outputPath('recorded-products.har'), {
+		url: new RegExp(`^https?://[^/]+${apiEndpoints.productSearch}(?:\\?|$)`),
 		update: true,
 		updateMode: 'minimal',
 		updateContent: 'embed'
@@ -52,7 +52,7 @@ test('records the products response for a JSON mock', async ({ page, productsPag
 Run it from the repository root in the existing project, with `$recordingOutput` set to this run's reserved results directory:
 
 ```powershell
-npx --no-install playwright test src/tests/record-har.tmp.spec.ts --project=mocking_tests --reporter=line --output="$recordingOutput"
+npx --no-install playwright test src/tests/record-har.tmp.spec.ts --project=products --reporter=line --output="$recordingOutput"
 ```
 
 Wait for the command to finish: Playwright closes the context and flushes the HAR during teardown.
@@ -63,7 +63,7 @@ The temporary test's empty `contextOptions` disables inherited diagnostic HAR re
 ## Extract and validate before publishing
 
 Use an ephemeral process and existing tooling; do not install packages or add a conversion script.
-Read only the HAR created by this run. Select the last successful 2xx `GET` entry whose parsed URL pathname is exactly `/api/v1/products`; do not use another endpoint, a failed response, or an older recording.
+Read only the HAR created by this run. Select the last successful 2xx `GET` entry whose parsed URL pathname equals `apiEndpoints.productSearch`. Use the response's `content` array as the product rows.
 Decode `response.content.text` as UTF-8 after base64 decoding when `response.content.encoding` is `base64`; otherwise use the plain text. Reject missing content, unsupported encodings, and malformed JSON.
 
 Require a non-empty array and validate every record against the current `Product` interface and runtime `ProductCategory` values:
@@ -101,12 +101,12 @@ If recording, extraction, validation, cleanup, or publication fails, retain the 
 
 ## Cleanup and verify
 
-In `finally`, after the Playwright process exits, remove this run's recording and temporary spec on both success and failure, then restore any pre-existing HAR from its backup without overwriting another file.
+In `finally`, after the Playwright process exits, remove this run's recording and temporary spec on both success and failure.
 Remove this run's unused candidate on failure. If an artifact was changed by someone else, stop and preserve it instead of deleting or overwriting it.
 Remove the uniquely reserved results directory after the process exits; verify its resolved path is inside `src/hars/` before any recursive removal.
 Do not remove other recordings, result directories, cookies, or storage-state files.
 
-Run typecheck, the affected product tests in `mocking_tests`, `npm run check:ci`, and `npm run format:check` after cleanup.
-Verify new raw recordings remain local and are not staged, any pre-existing HAR is restored byte-for-byte, and the temporary spec and this run's backups/candidates are gone. Do not change existing tracking rules or publish changes to an existing HAR as part of refreshing JSON.
+Run typecheck, the affected tests in `products`, `npm run check:ci`, and `npm run format:check` after cleanup.
+Verify that raw recordings stayed local, the tracked replay sample is untouched, and the temporary spec and candidate are gone.
 Review the diff for unrelated user changes and secret-bearing content. Do not stage or commit HARs, credentials, or temporary files.
 Report the number of validated products, checks actually run, and cleanup status. Do not commit unless the user separately requests it.

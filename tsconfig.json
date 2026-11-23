@@ -14,12 +14,10 @@
 		"moduleDetection": "force",
 		"skipLibCheck": true,
 		"paths": {
-			"@components/*": ["./src/components/*"],
 			"@enums/*": ["./src/enums/*"],
 			"@fixtures/*": ["./src/fixtures/*"],
 			"@helpers/*": ["./src/helpers/*"],
 			"@pages/*": ["./src/pages/*"],
-			"@tests/*": ["./src/tests/*"],
 			"@models/*": ["./src/types/*"]
 		}
 	},

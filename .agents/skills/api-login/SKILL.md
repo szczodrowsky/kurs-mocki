@@ -5,7 +5,7 @@ description: >-
   browser. Use for requests to log in as admin, open the admin panel, or prepare a
   session for inspection or verification; also use when adding or changing API
   authentication for Playwright tests, adding a test user or role, or configuring
-  loginViaApi or skipAutoLogin. Session preparation uses the API; testing login-form
+  storageState or skipAutoLogin. Session preparation uses the API; testing login-form
   behavior remains a UI test with automatic authentication disabled.
 ---
 
@@ -17,13 +17,13 @@ Read `AGENTS.md` and these sources before changing authentication:
 
 | Responsibility | Current source |
 | --- | --- |
-| API sign-in and browser session seeding | `src/helpers/login-via-api.ts` |
-| Automatic `loginViaApi`, `credentials`, and `skipAutoLogin` fixtures | `src/fixtures/page-fixtures.ts` |
+| API sign-in and storage-state construction | `src/helpers/login-via-api.ts` |
+| Storage-state file creation and cleanup | `src/fixtures/global-setup.ts` |
+| `storageState`, `credentials`, `skipAutoLogin`, and `freshSession` fixtures | `src/fixtures/page-fixtures.ts` |
 | Default test user | `src/helpers/login-credentials.ts` |
 | Credential and fixture types | `src/types/login-credentials.ts`, `src/types/page-fixtures.ts` |
 
-The `loginViaApi` helper performs both API sign-in and session seeding.
-Reuse it through the automatic fixture; a new user role normally needs only different credentials, not another authentication helper.
+Global setup uses `loginViaApi()` to sign in and build the default storage state. A new role normally needs only a different `credentials` value.
 
 ## Load configuration safely
 
@@ -34,12 +34,12 @@ Reuse it through the automatic fixture; a new user role normally needs only diff
 ## Authenticate tests and additional roles
 
 - API sign-in in `loginViaApi`: POST JSON containing `username` and `password` to `/api/v1/users/signin` on the configured application origin. Send `X-Client-Session-Id`; use a fresh ID for each isolated test session. Validate the HTTP status and JSON, require non-empty string `token` and `refreshToken` values, and reject an unfinished MFA challenge. Do not print the request body, response body, credentials, or tokens.
-- Session seeding in the same helper: initialize the application origin's local storage with `token`, `refreshToken`, and `clientSessionId` before application scripts run. Prefer the session ID returned in `x-client-session-id` when present; otherwise retain the ID sent with sign-in. The helper uses `context.setStorageState` on a fresh test context. The observed sign-in response does not set authentication cookies; preserve any required cookies if the contract changes.
-- Keep `loginViaApi` test-scoped and automatic with `{ auto: true }`. It uses the configured `credentials` and yields `true` after authentication. With `skipAutoLogin: true`, it sends no sign-in request, does not seed authentication state, and yields `false`.
+- The helper builds storage state with the API cookies and local storage keys `token`, `refreshToken`, and `clientSessionId` for the application origin. Prefer the ID from `x-client-session-id`, falling back to the ID sent with sign-in.
+- Global setup writes the default state to a unique local file under Git-ignored `.playwright/.auth/` for each run. The `storageState` fixture loads it into each new browser context. Global teardown removes that run's file. `skipAutoLogin: true` creates an unauthenticated context. Custom credentials or a different base URL get a separate session in memory.
 - UI specs import `test` and `expect` from `@fixtures/page-fixtures.js` and receive Page Objects through fixtures. They do not repeat authentication setup or call `loginPage.login()` to prepare unrelated scenarios.
 - Add a requested role to the existing user-definition helper using `LoginCredentials`. Resolve credentials lazily, following `getAdminCredentials`, so unused roles do not require unrelated environment variables during test discovery. Read that role's secrets with `getRequiredEnv`; keep actual values in ignored `.env` or CI secrets. Add only empty placeholders to `.env.example` when new variables are needed. Do not create accounts or change permissions unless requested.
 - Select a role with `test.use({ credentials: roleCredentials })`. For tests of the login form itself, scope `test.use({ skipAutoLogin: true })` to the relevant file or `test.describe` group, then navigate through `loginPage` explicitly.
-- For a mocked 401 from the current-user endpoint, keep automatic API login enabled so the browser starts with a valid session. Follow [mock-api-errors](../mock-api-errors/SKILL.md) for the retry and redirect checks.
+- For a mocked 401 from the current-user endpoint, set `freshSession: true` so the browser starts with an independent session. Follow [mock-api-errors](../mock-api-errors/SKILL.md) for the retry and redirect checks.
 - Keep custom types under `src/types/`, import them with `import type` through `@models/*`, and follow the existing aliases. Keep selectors in Page Object constructors and prefer existing `getByTestId` locators. Do not add code comments.
 
 ## Authenticate a real browser through Playwright CLI or MCP
@@ -50,7 +50,7 @@ Use API authentication for browser inspection and verification too. Do not fill 
 2. Follow the `playwright-cli` skill for session commands. Start a named headless session with `-s=<project-session> open` if needed. Run browser commands outside the sandbox as required by `AGENTS.md`. CLI `run-code` has no Node imports or `process.env`; supply environment-derived values through the local harness described above.
 3. Navigate to the configured `BASE_URL` origin if necessary. Reuse its existing `clientSessionId`, or generate one for the request. Call `/api/v1/users/signin` with the same JSON payload, session header, and validation as the helper. Prefer the response's `x-client-session-id`, falling back to the request ID. Keep the validated tokens in memory.
 4. Before replacing browser authentication, verify the candidate identity and requested role through `/api/v1/users/me`. For administrator access, also apply the authorization checks below. If verification fails, leave the existing authentication keys untouched.
-5. Use MCP `browser_evaluate`, or CLI `run-code` with `page.evaluate`, to update only the three authentication keys. Do not call the helper's context-replacing `setStorageState` on an existing interactive session.
+5. Use MCP `browser_evaluate`, or CLI `run-code` with `page.evaluate`, to update only the three authentication keys.
 
 ```ts
 await page.evaluate(({ token, refreshToken, clientSessionId }) => {

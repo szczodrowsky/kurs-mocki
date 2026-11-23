@@ -81,7 +81,8 @@ export class ProductDetailsPage extends BasePage<number> {
 		);
 	}
 
-	async mockProductOutOfStock(id: number): Promise<void> {
+	async mockProductOutOfStock(id: number): Promise<() => Product | undefined> {
+		let upstreamProduct: Product | undefined;
 		await this.page.route(
 			(url) => url.pathname === apiEndpoints.product(id),
 			async (route) => {
@@ -97,8 +98,10 @@ export class ProductDetailsPage extends BasePage<number> {
 				}
 
 				const product: Product = await response.json();
+				upstreamProduct = product;
 				await route.fulfill({ response, json: { ...product, stockQuantity: 0 } });
 			}
 		);
+		return () => upstreamProduct;
 	}
 }

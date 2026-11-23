@@ -9,14 +9,12 @@ Install dependencies with `npm ci` before the first run. The project pins `@play
 use `npx --no-install playwright-cli`, which is separate from the Playwright test runner.
 
 ```powershell
-npx --no-install playwright-cli -s=kurs-mocki open https://aitesters.byst.re/login --browser=chromium --headed
-npx --no-install playwright-cli -s=kurs-mocki snapshot
+npx --no-install playwright-cli -s=kurs-mocki-headless open
+npx --no-install playwright-cli -s=kurs-mocki-headless snapshot
 ```
 
-Log in with an existing test account in the visible browser. Do not put credentials in this document,
-CLI snippets, or tracked files. Use the same named session for subsequent commands and leave it open
-after the demonstration. If a session is headless, start a headed session and reinstall its mocks
-before triggering requests.
+Follow the [API login skill](../.agents/skills/api-login/SKILL.md) to authenticate from the local environment.
+Reuse the named headless session between commands. Use `--headed` for explicitly requested visible sessions.
 
 ## Inspect before mocking
 
@@ -26,7 +24,7 @@ before triggering requests.
 3. Inspect the network requests:
 
 ```powershell
-npx --no-install playwright-cli -s=kurs-mocki requests
+npx --no-install playwright-cli -s=kurs-mocki-headless requests
 ```
 
 Confirm the request URL, method, response shape, and visible result before writing a mock.
@@ -48,8 +46,8 @@ and specs in `src/tests/`. Reuse `src/helpers/generate-products.ts` only if the 
 contract matches, or adapt its types and generator first. Mock only the data request under test;
 keep authentication real.
 
-The authenticated screen, endpoint, and UI assertions still need browser verification before this
-scenario can become a runnable test.
+Use `npm run test:products` for the catalog and product details, `npm run test:cart` for the cart,
+and `npm run test:login` for authentication. `npm test` runs all categories with two workers.
 
 For CLI syntax and mocking examples, see the
 [Playwright CLI skill](../.agents/skills/playwright-cli/SKILL.md) and its
