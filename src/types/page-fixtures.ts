@@ -4,6 +4,7 @@ import type { DashboardPage } from '@pages/dashboardPage.js';
 import type { LoginPage } from '@pages/loginPage.js';
 import type { ProductDetailsPage } from '@pages/productDetailsPage.js';
 import type { ProductsPage } from '@pages/productsPage.js';
+import type { RegisterPage } from '@pages/registerPage.js';
 
 export interface PageFixtures {
 	readonly credentials: LoginCredentials;
@@ -14,4 +15,5 @@ export interface PageFixtures {
 	readonly productsPage: ProductsPage;
 	readonly productDetailsPage: ProductDetailsPage;
 	readonly cartPage: CartPage;
+	readonly registerPage: RegisterPage;
 }

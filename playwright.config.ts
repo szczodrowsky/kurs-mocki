@@ -29,6 +29,7 @@ export default defineConfig({
 	projects: [
 		{ name: 'login', grep: /@login\b/ },
 		{ name: 'products', grep: /@products\b/ },
-		{ name: 'cart', grep: /@cart\b/ }
+		{ name: 'cart', grep: /@cart\b/ },
+		{ name: 'register', grep: /@register\b/ }
 	]
 });

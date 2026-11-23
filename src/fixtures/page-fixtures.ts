@@ -7,6 +7,7 @@ import { DashboardPage } from '@pages/dashboardPage.js';
 import { LoginPage } from '@pages/loginPage.js';
 import { ProductDetailsPage } from '@pages/productDetailsPage.js';
 import { ProductsPage } from '@pages/productsPage.js';
+import { RegisterPage } from '@pages/registerPage.js';
 import { test as base, expect } from '@playwright/test';
 
 export const test = base.extend<PageFixtures>({
@@ -66,6 +67,9 @@ export const test = base.extend<PageFixtures>({
 	},
 	cartPage: async ({ page }, use) => {
 		await use(new CartPage(page));
+	},
+	registerPage: async ({ page }, use) => {
+		await use(new RegisterPage(page));
 	}
 });
 

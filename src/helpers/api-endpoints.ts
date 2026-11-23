@@ -10,5 +10,6 @@ export const apiEndpoints = {
 	cartItems,
 	cartItem: (productId: number) => `${cartItems}/${productId}`,
 	currentUser: '/api/v1/users/me',
-	signIn: '/api/v1/users/signin'
+	signIn: '/api/v1/users/signin',
+	signUp: '/api/v1/users/signup'
 };

@@ -9,6 +9,7 @@
 		"test:login": "playwright test --project=login",
 		"test:products": "playwright test --project=products",
 		"test:cart": "playwright test --project=cart",
+		"test:register": "playwright test --project=register",
 		"format": "biome format --write",
 		"format:check": "biome format .",
 		"check": "biome check --write --unsafe",
