@@ -1,3 +1,5 @@
+import { apiEndpoints } from '@helpers/api-endpoints.js';
+import { mockGetError } from '@helpers/mock-api-error.js';
 import type { Product } from '@models/product.js';
 import type {
 	ProductCardLocators,
@@ -32,6 +34,7 @@ export class ProductsPage extends BasePage {
 		};
 
 		this.buttons = {
+			clearSearch: page.getByTestId('clear-search'),
 			allProducts: page.getByTestId('products-category-all'),
 			audio: page.getByTestId('products-category-audio'),
 			books: page.getByTestId('products-category-books'),
@@ -91,13 +94,14 @@ export class ProductsPage extends BasePage {
 		};
 
 		this.texts = {
+			loadError: page.getByTestId('error-message'),
 			noProducts: page.getByTestId('no-products-message'),
 			summary: page.getByTestId('products-count-summary')
 		};
 	}
 
 	async mockResponse(products: Product[]): Promise<void> {
-		await this.page.route('**/api/v1/products', async (route) => {
+		await this.page.route(`**${apiEndpoints.products}`, async (route) => {
 			if (route.request().method() !== 'GET') {
 				await route.fallback();
 				return;
@@ -108,7 +112,7 @@ export class ProductsPage extends BasePage {
 	}
 
 	async mockFromJson(jsonPath: string): Promise<void> {
-		await this.page.route('**/api/v1/products', async (route) => {
+		await this.page.route(`**${apiEndpoints.products}`, async (route) => {
 			if (route.request().method() !== 'GET') {
 				await route.fallback();
 				return;
@@ -120,8 +124,55 @@ export class ProductsPage extends BasePage {
 
 	async mockFromHar(): Promise<void> {
 		await this.page.routeFromHAR('src/hars/network.har', {
-			url: '**/api/v1/products'
+			url: `**${apiEndpoints.products}`
 		});
+	}
+
+	async mockProductsError(status: 404 | 500): Promise<void> {
+		await mockGetError(this.page, apiEndpoints.productSearch, status);
+	}
+
+	async mockProductsNetworkError(recoveryProducts?: readonly Product[]): Promise<void> {
+		let attempts = 0;
+		await this.page.route(
+			(url) => url.pathname === apiEndpoints.productSearch,
+			async (route) => {
+				if (route.request().method() !== 'GET') {
+					await route.fallback();
+					return;
+				}
+
+				if (!recoveryProducts || ++attempts <= 2) {
+					await route.abort();
+					return;
+				}
+
+				const { searchParams } = new URL(route.request().url());
+				const pageNumber = Number(searchParams.get('page') ?? 0);
+				const pageSize = Number(searchParams.get('size') ?? 12);
+				const start = pageNumber * pageSize;
+				const prices = recoveryProducts.map(({ price }) => price);
+				const categories = Object.entries(Object.groupBy(recoveryProducts, ({ category }) => category)).map(
+					([value, entries]) => ({ value, count: entries.length })
+				);
+
+				await route.fulfill({
+					status: 200,
+					json: {
+						content: recoveryProducts.slice(start, start + pageSize),
+						pageNumber,
+						pageSize,
+						totalElements: recoveryProducts.length,
+						totalPages: Math.ceil(recoveryProducts.length / pageSize),
+						facets: {
+							categories,
+							priceRange: prices.length ? { min: Math.min(...prices), max: Math.max(...prices) } : { min: 0, max: 0 },
+							inStockCount: recoveryProducts.filter(({ stockQuantity }) => stockQuantity > 0).length
+						}
+					}
+				});
+			}
+		);
 	}
 
 	scopeProductCard(name: string): ProductCardLocators {

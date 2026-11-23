@@ -11,6 +11,7 @@ node_modules/
 /playwright/.auth/
 .playwright/
 .playwright-cli/
+.playwright-mcp/
 **/.auth/
 **/storage-state*.json
 **/auth-state*.json

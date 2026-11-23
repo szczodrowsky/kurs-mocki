@@ -1,3 +1,5 @@
+import { apiEndpoints } from '@helpers/api-endpoints.js';
+import { mockGetError } from '@helpers/mock-api-error.js';
 import type { LoginCredentials } from '@models/login-credentials.js';
 import type { LoginPageButtons, LoginPageErrors, LoginPageInputs, LoginPageLinks } from '@models/login-page.js';
 import { BasePage } from '@pages/basePage.js';
@@ -51,5 +53,9 @@ export class LoginPage extends BasePage {
 		await this.inputs.username.fill(username);
 		await this.inputs.password.fill(password);
 		await this.buttons.signIn.click();
+	}
+
+	async mockCurrentUserUnauthorized(): Promise<void> {
+		await mockGetError(this.page, apiEndpoints.currentUser, 401);
 	}
 }

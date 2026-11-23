@@ -28,6 +28,7 @@ export interface ProductsPageHeadings {
 }
 
 export interface ProductsPageTexts {
+	readonly loadError: Locator;
 	readonly noProducts: Locator;
 	readonly summary: Locator;
 }
@@ -52,6 +53,7 @@ export interface ProductsPageInputs {
 }
 
 export interface ProductsPageButtons {
+	readonly clearSearch: Locator;
 	readonly allProducts: Locator;
 	readonly audio: Locator;
 	readonly books: Locator;

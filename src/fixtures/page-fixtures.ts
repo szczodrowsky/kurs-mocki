@@ -5,6 +5,7 @@ import { loginViaApi } from '@helpers/login-via-api.js';
 import type { PageFixtures } from '@models/page-fixtures.js';
 import { DashboardPage } from '@pages/dashboardPage.js';
 import { LoginPage } from '@pages/loginPage.js';
+import { ProductDetailsPage } from '@pages/productDetailsPage.js';
 import { ProductsPage } from '@pages/productsPage.js';
 import { test as base, expect } from '@playwright/test';
 
@@ -38,6 +39,9 @@ export const test = base.extend<PageFixtures>({
 	},
 	productsPage: async ({ page }, use) => {
 		await use(new ProductsPage(page));
+	},
+	productDetailsPage: async ({ page }, use) => {
+		await use(new ProductDetailsPage(page));
 	},
 	loginViaApi: [
 		async ({ context, credentials, baseURL, skipAutoLogin }, use) => {

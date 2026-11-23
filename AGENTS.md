@@ -60,7 +60,7 @@ Use the local `.env` file for test credentials. For `https://aitesters.byst.re`,
 
 Run tests and all browser automation commands outside the sandbox (`sandbox_permissions: "require_escalated"`). Sandboxed process creation fails with Windows access denied in this environment; do not treat that failure as an application issue.
 
-For interactive API mock creation, inspection, and demonstrations with Playwright CLI, use a visible browser (`--headed`) in a named project session and keep the session between commands. If the current session is headless, start a headed session and set up the required mocks again before triggering requests. Leave the browser open after the demonstration unless the user asks to close it. This rule applies to interactive CLI work; automated tests and CI may run headless.
+For Playwright CLI work, use a named headless project session (`npx --no-install playwright-cli -s=kurs-mocki-headless open`) and reuse it between commands. Use `--headed` only for an explicitly requested visible session. Remove temporary routes after verification and leave the session running unless the user asks to close it.
 
 ## Environment Variables
 

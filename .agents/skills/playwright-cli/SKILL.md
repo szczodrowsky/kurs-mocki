@@ -6,6 +6,8 @@ allowed-tools: Bash(playwright-cli:*) Bash(npx playwright:*) Bash(npx --no-insta
 
 # Browser Automation with playwright-cli
 
+For this project, start or reuse a named headless session. Use `npx --no-install playwright-cli -s=kurs-mocki-headless open` and pass the same `-s` value to subsequent commands. Add `--headed` only when the user explicitly requests a visible session.
+
 ## Quick start
 
 ```bash
@@ -479,6 +481,7 @@ See [references/pr-attachments.md](references/pr-attachments.md) for alt text, i
 
 * **Running and Debugging Playwright tests** [references/playwright-tests.md](references/playwright-tests.md)
 * **Request mocking** [references/request-mocking.md](references/request-mocking.md)
+* **HTTP error scenarios in this project** [mock-api-errors](../mock-api-errors/SKILL.md)
 * **Running Playwright code** [references/running-code.md](references/running-code.md)
 * **Browser session management** [references/session-management.md](references/session-management.md)
 * **Storage state (cookies, localStorage)** [references/storage-state.md](references/storage-state.md)

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { apiEndpoints } from '@helpers/api-endpoints.js';
 import type { LoginCredentials } from '@models/login-credentials.js';
 import type { BrowserContext } from '@playwright/test';
 
@@ -8,7 +9,7 @@ export async function loginViaApi(
 	baseURL: string
 ): Promise<void> {
 	const clientSessionId = randomUUID();
-	const response = await context.request.post(new URL('/api/v1/users/signin', baseURL).href, {
+	const response = await context.request.post(new URL(apiEndpoints.signIn, baseURL).href, {
 		data: credentials,
 		headers: { 'X-Client-Session-Id': clientSessionId }
 	});

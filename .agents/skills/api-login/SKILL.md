@@ -39,14 +39,15 @@ Reuse it through the automatic fixture; a new user role normally needs only diff
 - UI specs import `test` and `expect` from `@fixtures/page-fixtures.js` and receive Page Objects through fixtures. They do not repeat authentication setup or call `loginPage.login()` to prepare unrelated scenarios.
 - Add a requested role to the existing user-definition helper using `LoginCredentials`. Resolve credentials lazily, following `getAdminCredentials`, so unused roles do not require unrelated environment variables during test discovery. Read that role's secrets with `getRequiredEnv`; keep actual values in ignored `.env` or CI secrets. Add only empty placeholders to `.env.example` when new variables are needed. Do not create accounts or change permissions unless requested.
 - Select a role with `test.use({ credentials: roleCredentials })`. For tests of the login form itself, scope `test.use({ skipAutoLogin: true })` to the relevant file or `test.describe` group, then navigate through `loginPage` explicitly.
+- For a mocked 401 from the current-user endpoint, keep automatic API login enabled so the browser starts with a valid session. Follow [mock-api-errors](../mock-api-errors/SKILL.md) for the retry and redirect checks.
 - Keep custom types under `src/types/`, import them with `import type` through `@models/*`, and follow the existing aliases. Keep selectors in Page Object constructors and prefer existing `getByTestId` locators. Do not add code comments.
 
 ## Authenticate a real browser through Playwright CLI or MCP
 
 Use API authentication for browser inspection and verification too. Do not fill the login form as a shortcut for establishing a session; interact with it only when the login form is the behavior under test.
 
-1. Reuse the current browser session. For interactive CLI work, use a headed browser in a named project session and leave it open after verification. Preserve existing storage-state files, cookies, and unrelated browser storage. Do not reset the context, call `localStorage.clear()`, clear cookies, or delete storage state to authenticate.
-2. Follow the `playwright-cli` skill for session commands. Reuse the named headed project session, or open one with `-s=<project-session> open --headed` if none exists. Run browser commands outside the sandbox as required by `AGENTS.md`. CLI `run-code` has no Node imports or `process.env`; supply environment-derived values through the local harness described above.
+1. Reuse the current named headless project session for CLI work and leave it running after verification. Preserve existing storage-state files, cookies, and unrelated browser storage. Do not reset the context, call `localStorage.clear()`, clear cookies, or delete storage state to authenticate.
+2. Follow the `playwright-cli` skill for session commands. Start a named headless session with `-s=<project-session> open` if needed. Run browser commands outside the sandbox as required by `AGENTS.md`. CLI `run-code` has no Node imports or `process.env`; supply environment-derived values through the local harness described above.
 3. Navigate to the configured `BASE_URL` origin if necessary. Reuse its existing `clientSessionId`, or generate one for the request. Call `/api/v1/users/signin` with the same JSON payload, session header, and validation as the helper. Prefer the response's `x-client-session-id`, falling back to the request ID. Keep the validated tokens in memory.
 4. Before replacing browser authentication, verify the candidate identity and requested role through `/api/v1/users/me`. For administrator access, also apply the authorization checks below. If verification fails, leave the existing authentication keys untouched.
 5. Use MCP `browser_evaluate`, or CLI `run-code` with `page.evaluate`, to update only the three authentication keys. Do not call the helper's context-replacing `setStorageState` on an existing interactive session.
@@ -67,7 +68,7 @@ Reload or navigate to the requested page after seeding. Verify `/api/v1/users/me
 
 - Send `Authorization: Bearer <token>` and `X-Client-Session-Id` from the candidate session to `GET /api/v1/users/me`. Require HTTP 200 and an explicit `ROLE_ADMIN` or `ADMIN` entry in `roles`, matching the application's admin route guard. Receiving a token, decoding a JWT, or recognizing a username does not prove authorization.
 - Require HTTP 200 from the read-only `GET /api/v1/admin/inventory` with the same headers. Do not modify products, accounts, or permissions to verify access. Recheck the current frontend/API contract if these endpoints or role values change; do not weaken the check to make it pass.
-- After seeding, open `/admin/inventory`, require visible `getByTestId('admin-inventory')`, and repeat the identity and read-only authorization checks using the browser's stored session. Then navigate to the user's requested page if different. Report only the role label, HTTP statuses, visible UI result, and whether the named headed session remains open.
+- After seeding, open `/admin/inventory`, require visible `getByTestId('admin-inventory')`, and repeat the identity and read-only authorization checks using the browser's stored session. Then navigate to the user's requested page if different. Report only the role label, HTTP statuses, visible UI result, and whether the named session remains open.
 
 ## Handle authentication failures
 
